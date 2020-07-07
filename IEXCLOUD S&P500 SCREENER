@@ -1,0 +1,44 @@
+import csv
+import requests
+import pandas as pd
+import numpy as np
+
+
+apiToken = 'API_TOKEN'
+apiFilters = 'symbol,companyName,changePercent,ytdChange'
+
+
+def getTickers():
+    spCsv = open('S&P500 SYMBOLS.csv', 'r')
+    newTickerList = []
+    for line in spCsv:
+        for x in range(500):
+            line = line.strip(str(x))
+        line = line.strip(',')
+        line = line.strip('\n')
+        newTickerList.append(line)
+    bigList = [newTickerList[x:x+100] for x in range(0, len(newTickerList), 100)]
+    return bigList
+
+
+def marketScreener(apiToken, tickers, apiFilters):
+    incrementVar = 0
+    newDf = pd.DataFrame(columns=['symbol', 'companyName', 'changePercent', 'ytdChange'])
+    for tickerList in tickers:
+        tickerString = ','.join(tickerList)
+        url = 'https://cloud.iexapis.com/stable/stock/market/batch?types=quote&token={}&symbols={}&format=csv&filter={}'.format(apiToken, tickerList, apiFilters)
+        with requests.Session() as s:
+            download = s.get(url)
+            decodedContent = download.content.decode("utf-8")
+        csvArray = list(csv.reader(decodedContent.splitlines(), delimiter=","))
+        df = pd.DataFrame(np.array(csvArray))
+        df.columns = df.iloc[0]
+        df = df.drop(0, 0)
+        newDf = newDf.append(df, ignore_index=True)
+        incrementVar += 1
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+        display(newDf)
+
+
+bulkTickers = getTickers()
+marketScreener(apiToken, bulkTickers, apiFilters)
