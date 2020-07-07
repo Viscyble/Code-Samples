@@ -1,0 +1,39 @@
+import requests
+import bs4 as bs
+from bs4 import BeautifulSoup
+import pandas as pd
+
+
+def getTickers():
+    spCsv = open('S&P500 Symbols.csv', 'r')
+    newTickerList = []
+    for line in spCsv:
+        for x in range(500):
+            line = line.strip(str(x))
+        line = line.strip(',')
+        line = line.strip('\n')
+        newTickerList.append(line)
+    return newTickerList
+
+def parseFunction(ticker):
+    r = requests.get('https://finance.yahoo.com/quote/{}'.format(ticker))
+    soup = bs.BeautifulSoup(r.text,'lxml')
+    tickerPrice = soup.find('div',{'class':'My(6px) Pos(r) smartphone_Mt(6px)'}).find_all('span')[0].text
+    tickerChange = soup.find('div',{'class':'My(6px) Pos(r) smartphone_Mt(6px)'}).find_all('span')[1].text
+    return(tickerPrice, tickerChange)
+    
+    
+def main():
+    mainDfList = []
+    fullTickerList = getTickers()
+    for ticker in fullTickerList:
+        tickerQuery = parseFunction(ticker)
+        dict1 = {ticker, tickerQuery[0], tickerQuery[1]}
+        mainDfList.append(dict1)
+        print('New object created for {}'.format(ticker))
+    mainDf = pd.DataFrame(mainDfList, columns=['symbol, price, change'])
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+        display(mainDf)
+
+
+main()
