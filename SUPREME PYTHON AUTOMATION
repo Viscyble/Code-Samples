@@ -1,0 +1,45 @@
+# Import statements
+import requests
+import bs4 as bs
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.support.ui import Select
+import time
+
+
+def pingSupreme():
+    url = 'https://www.supremenewyork.com/shop'
+    r = requests.get(url)
+    s = soup = bs.BeautifulSoup(r.text,'lxml')
+    newestRelease = s.find('li',{'class':'t-shirts'}).find('a', href=True)['href']
+    constructedLink = 'https://www.supremenewyork.com{}'.format(newestRelease)
+    return constructedLink
+
+
+def seleniumView(constructedLink):
+    driver = webdriver.Chrome(executable_path=r'C:\\Users\\User\\Documents\\chromedriver_win32\\chromedriver.exe')
+    driver.get(constructedLink)
+    time.sleep(0.5)
+    addCart = driver.find_element_by_xpath('/html/body/div[2]/div/div[2]/div/form/fieldset[2]/input').click()
+    time.sleep(0.5)
+    driver.get('https://www.supremenewyork.com/checkout')
+    time.sleep(0.5)
+    inputName = driver.find_element_by_xpath('/html/body/div[2]/div[1]/form/div[2]/div[1]/fieldset/div[1]/input').send_keys('First Last')
+    inputEmail = driver.find_element_by_xpath('/html/body/div[2]/div[1]/form/div[2]/div[1]/fieldset/div[2]/input').send_keys('firstlast@gmail.com')
+    inputTel = driver.find_element_by_xpath('/html/body/div[2]/div[1]/form/div[2]/div[1]/fieldset/div[3]/input').send_keys('000-000-0000')
+    inputAddress = driver.find_element_by_xpath('/html/body/div[2]/div[1]/form/div[2]/div[1]/fieldset/div[4]/div[1]/input').send_keys('0000 Street Name')
+    inputZip = driver.find_element_by_xpath('/html/body/div[2]/div[1]/form/div[2]/div[1]/fieldset/div[5]/div[1]/input').send_keys('00000')
+    inputCity = driver.find_element_by_xpath('/html/body/div[2]/div[1]/form/div[2]/div[1]/fieldset/div[5]/div[2]/input').send_keys('First Last')
+    stateDropdown = Select(driver.find_element_by_xpath('/html/body/div[2]/div[1]/form/div[2]/div[1]/fieldset/div[5]/div[3]/select'))
+    stateDropdown.select_by_visible_text('CA')
+    inputCC = driver.find_element_by_xpath('/html/body/div[2]/div[1]/form/div[2]/div[2]/fieldset/div[1]/div[2]/input').send_keys('0000000000000000')
+    ccMonth = Select(driver.find_element_by_xpath('/html/body/div[2]/div[1]/form/div[2]/div[2]/fieldset/div[1]/div[3]/div[1]/select[1]'))
+    ccMonth.select_by_visible_text('01')
+    ccYear = Select(driver.find_element_by_xpath('/html/body/div[2]/div[1]/form/div[2]/div[2]/fieldset/div[1]/div[3]/div[1]/select[2]'))
+    ccYear.select_by_visible_text('2020')
+    inputCvv = driver.find_element_by_xpath('/html/body/div[2]/div[1]/form/div[2]/div[2]/fieldset/div[1]/div[3]/div[2]/input').send_keys('000')
+    acceptTc = driver.find_element_by_xpath('/html/body/div[2]/div[1]/form/div[2]/div[2]/fieldset/p[2]/label/div/ins').click()
+    processPayment = driver.find_element_by_xpath('/html/body/div[2]/div[1]/form/div[3]/div[2]/input').click()
+    
+
+seleniumView(pingSupreme())
